@@ -9,6 +9,11 @@ import skadi.exception.BeanNotFoundException;
 import skadi.util.BeanUtils
 import skadi.util.ReflectionUtils
 
+/**
+ * Implementation of {@link InstanceFactory}.
+ *
+ * @author Nikola Milinkovic
+ */
 private[container] class InstanceFactoryImpl extends InstanceFactory {
 
   private var beansMap: Map[Symbol, FactoryBean] = null
