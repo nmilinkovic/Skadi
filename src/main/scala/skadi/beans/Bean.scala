@@ -11,7 +11,7 @@ import scala.reflect.Manifest
  * <pre>
  *   new Bean named 'userService
  *   implementedWith classOf[com.sample.app.UserServiceImpl]
- *   usingConstructorArgs 'userDao
+ *   constructorArgs 'userDao
  *   inject 100 -> 'maxPosts
  *   initializeWith('init, 5)
  * </pre>
@@ -60,7 +60,7 @@ class Bean extends AbstractBean {
    *       bean
    * @return the instance of this bean
    */
-  def usingConstructorArgs(args: Any*): Bean = {
+  def constructorArgs(args: Any*): Bean = {
     this.args = args.toList
     this
   }

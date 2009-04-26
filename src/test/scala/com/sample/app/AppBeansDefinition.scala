@@ -12,22 +12,22 @@ object AppBeansDefinition extends BeansDefinition {
 
       new Bean named 'userDao
       implementedWith classOf[com.sample.app.dao.UserDaoImpl]
-      usingConstructorArgs 'userDao
+      constructorArgs 'userDao
       loadLazily,
 
       new Bean named 'userService
       implementedWith classOf[com.sample.app.service.UserServiceImpl]
-      usingConstructorArgs('userDao, 'postDao, 5)
+      constructorArgs('userDao, 'postDao, 5)
       inject(100 -> 'maxPosts),
 
       new Bean named 'user
       implementedWith classOf[com.sample.app.model.User]
-      usingConstructorArgs("username", "pass")
+      constructorArgs("username", "pass")
       scopedAsPrototype,
 
       new Bean named 'admin
       implementedWith classOf[com.sample.app.model.User]
-      usingConstructorArgs(Val("admin"), Val("admin"))
+      constructorArgs(Val("admin"), Val("admin"))
       scopedAsPrototype
     )
   }

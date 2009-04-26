@@ -17,4 +17,5 @@ class AppContainer(beans: Seq[Bean]) extends BeanRepositoryImpl with Container {
   override protected def postprocessors = Nil
 
   load(beans)
+
 }

@@ -8,6 +8,12 @@ import skadi.beans.Bean
 import skadi.beans.Prop
 import skadi.beans.Property
 
+/**
+ * Attempts to replace all property placeholders with user defined or system and
+ * environment properties.
+ *
+ * @author Nikola Milinkovic
+ */
 private[container] class PropertiesResolver extends BeanProcessor {
 
   private val delimiter = ";"
@@ -26,8 +32,10 @@ private[container] class PropertiesResolver extends BeanProcessor {
     beans.map(resolveProperties(_, userProperties, systemProperties))
   }
 
+  // replaces placeholders in constructor arguments and injectables
   private def resolveProperties(bean: Bean, userProps: Properties,
                                 sysProps: Properties): Bean = {
+    // TODO find out how to deal with non-string properties
     bean.args = bean.args.map(resolveProperty(_, userProps, sysProps))
     bean.injectables = bean.injectables.map(i => (resolveProperty(i._1, userProps, sysProps),
                                                   i._2))
@@ -56,6 +64,7 @@ private[container] class PropertiesResolver extends BeanProcessor {
     property
   }
 
+  // reads user defined properties
   private def readUserProperties(handles: Seq[Bean]): Properties = {
 
     val classloader = if (currentThread.getContextClassLoader != null) {
@@ -76,7 +85,7 @@ private[container] class PropertiesResolver extends BeanProcessor {
     filesInjectables.map(_._1.asInstanceOf[String])
   }
 
-
+  // attempts to read properties from either a regular or xml properties file
   private def loadProperties(filename: String, properties: Properties,
                              classloader: ClassLoader): Unit = {
 

@@ -14,14 +14,14 @@ class TopologicalBeanSorterTest {
     val beans = Beans(
 
       new Bean named 'postService
-      usingConstructorArgs('postDao),
+      constructorArgs('postDao),
 
       new Bean named 'userService
       inject('postDao -> 'postDao,
              'userDao -> 'userDao),
 
       new Bean named 'blogServlet
-      usingConstructorArgs('userService, 'postService),
+      constructorArgs('userService, 'postService),
 
       new Bean named 'userDao,
 

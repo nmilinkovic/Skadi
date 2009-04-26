@@ -8,6 +8,9 @@ import skadi.beans.FactoryBean;
 import skadi.beans.Scope
 import skadi.exception.BeanNotFoundException;
 
+/**
+ * Implementation of the {@link BeanRepository}.
+ */
 private[container] class BeanRepositoryImpl extends InstanceFactoryImpl
   with BeanRepository with BeanEvaluator {
 
@@ -16,19 +19,23 @@ private[container] class BeanRepositoryImpl extends InstanceFactoryImpl
   override def getAllBeanNames(): Set[Symbol] = Set.empty ++ context.keySet
 
   override def getBeanNamesForExactType[T](implicit m: Manifest[T]): Set[Symbol] = {
+
     val names = for {
       bean <- context.values
       if (bean.clazz == m.erasure)
     } yield bean.name
+
     Set.empty ++ names
   }
 
   override def getAssignableBeanNamesForType[T](implicit m: Manifest[T]):
     Set[Symbol] = {
+
     val names = for {
       bean <- context.values
       if (isAssignable(bean.name, m.erasure))
     } yield bean.name
+
     Set.empty ++ names
   }
 

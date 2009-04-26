@@ -38,6 +38,7 @@ trait Container extends BeanRepository with BeanEvaluator with InstanceFactory
       for (postprocessor <- postprocessors) {
         factoryBeans = postprocessor.process(factoryBeans)
       }
+
       init(factoryBeans)
 
     } catch {

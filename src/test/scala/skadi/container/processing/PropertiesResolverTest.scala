@@ -20,12 +20,12 @@ class PropertiesResolverTest {
 
       new Bean named 'userService
       implementedWith classOf[com.sample.app.service.UserServiceImpl]
-      usingConstructorArgs('userDao, 'postDao, Prop("max.users"))
+      constructorArgs('userDao, 'postDao, Prop("max.users"))
       inject("${max.posts}" -> 'maxPosts),
 
       new Bean named 'admin
       implementedWith classOf[com.sample.app.model.User]
-      usingConstructorArgs("${user.name}", "${admin.pass}"),
+      constructorArgs("${user.name}", "${admin.pass}"),
 
       new Bean implementedWith classOf[skadi.util.PropertiesHandle]
       inject("app.properties;props.xml" -> 'files)

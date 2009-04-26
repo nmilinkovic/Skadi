@@ -15,7 +15,7 @@ private[container] class InstanceFactoryImpl extends InstanceFactory {
 
   protected def context = beansMap
 
-  override protected def instanceProcessors = null
+  override protected def instanceProcessors = Nil
 
   private[container] def init(beans: Seq[FactoryBean]): Unit = {
     beansMap = BeanUtils.createFactoryBeansMap(beans)
@@ -84,6 +84,7 @@ private[container] class InstanceFactoryImpl extends InstanceFactory {
       val argRefs = ReflectionUtils.anyToRef(argVals)
       bean.constructor.newInstance(argRefs: _*)
     }
+
     injectWithSetterDependencies(instance, bean.clazz, injectables)
   }
 
