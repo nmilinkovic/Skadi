@@ -2,26 +2,27 @@ package skadi.util
 
 import org.junit.{Assert, Test}
 
+import skadi.beans.Val
+
 class BeanUtilsTest {
+
+  val beans = com.sample.app.AppBeansDefinition.getBeans.toList
+  val beansMap = BeanUtils.createBeansMap(beans)
 
   @Test
   def testGetArgType {
-    println("TODO implement test")
+    val postDaoType = BeanUtils.getArgType('postDao, beansMap)
+    Assert.assertEquals(classOf[com.sample.app.dao.PostDaoImpl], postDaoType)
+
+    val intType = BeanUtils.getArgType(Val(5), beansMap)
+    Assert.assertEquals(java.lang.Integer.TYPE, intType)
+
+    val stringType = BeanUtils.getArgType("a string", beansMap)
+    Assert.assertEquals(classOf[String], stringType)
   }
-  
-  @Test
-  def testGetArgTypes {
-    println("TODO implement test")
-  }
-  
-  @Test
-  def testGetSetterArgTypes {
-    println("TODO implement test")
-  }
-  
+
   @Test
   def testCreateFactoryBeansBeans {
-    val beans = com.sample.app.AppBeansDefinition.getBeans.toList
     val factoryBeans = BeanUtils.createFactoryBeans(beans).toList
     val pairs = beans zip factoryBeans
 

@@ -82,9 +82,7 @@ private[skadi] object BeanUtils {
    * @throws IllegalArgumentException if the passed beans are null
    */
   def createFactoryBeans(beans: Seq[Bean]): Seq[FactoryBean] = {
-
     require(beans != null)
-
     val beansMap = BeanUtils.createBeansMap(beans)
     beans.map(createFactoryBean(_, beansMap))
   }
@@ -100,7 +98,9 @@ private[skadi] object BeanUtils {
    * @throws IllegalArgumentException if the passed beans are null
    */
   def createBeansMap(beans: Seq[Bean]): Map[Symbol, Bean] = {
+
     require(beans != null)
+
     Map.empty ++ beans.map(b => (b.name, b))
   }
 
@@ -114,9 +114,10 @@ private[skadi] object BeanUtils {
    *
    * @throws IllegalArgumentException if the passed beans are null
    */
-  def createFactoryBeansMap(beans: Seq[FactoryBean]):
-    Map[Symbol, FactoryBean] = {
+  def createFactoryBeansMap(beans: Seq[FactoryBean]): Map[Symbol, FactoryBean] = {
+
     require(beans != null)
+
     Map.empty ++ beans.map(b => (b.name, b))
   }
 
@@ -130,7 +131,9 @@ private[skadi] object BeanUtils {
    * @throws IllegalArgumentException if the passed beans are null
    */
   def extractBeanNames(beans: Seq[Bean]): Seq[Symbol] = {
+
     require(beans != null)
+
     beans.map(_.name).toSeq
   }
 
