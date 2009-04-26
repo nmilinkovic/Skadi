@@ -36,8 +36,7 @@ private[container] class PropertiesResolver extends BeanProcessor {
   private def resolveProperties(bean: Bean, userProps: Properties, sysProps: Properties): Bean = {
     // TODO find out how to deal with non-string properties
     bean.args = bean.args.map(resolveProperty(_, userProps, sysProps))
-    bean.injectables = bean.injectables.map(i => (resolveProperty(i._1, userProps, sysProps),
-                                                  i._2))
+    bean.injectables = bean.injectables.map(i => (resolveProperty(i._1, userProps, sysProps), i._2))
     bean
   }
 

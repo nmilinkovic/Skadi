@@ -13,68 +13,65 @@ private[skadi] final object ReflectionUtils {
 
   private val scalaSuffix = "_$eq"
   private val javaPrefix = "set"
-  
+
   /**
    * Attempts to find a constructor in the given class that matches the supplied
    * argument types. Will take into the account the overloaded constructors that
    * have both the primitive and Object version of the parameters.
    *
    * @param clazz
-   * 					class to be searched for a suitable constructor
+   *           class to be searched for a suitable constructor
    * @param argTypes
-   * 				  agument types that the constructor should match
+   *           agument types that the constructor should match
    * @return Some constructor if it is found, None if there is no matching
    *          constructor
    * @throws IllegalArgumentException if either passed clazz or argTypes are null
    */
-  def findConstructor(clazz: Class[_], argTypes: Array[Class[_]]):
-    Option[Constructor[_]] = {
+  def findConstructor(clazz: Class[_], argTypes: Array[Class[_]]): Option[Constructor[_]] = {
 
-      require(clazz != null)
-      require(argTypes != null)
+    require(clazz != null)
+    require(argTypes != null)
+    val candidates =  for {
+      candidate <- clazz.getConstructors
+      if matches(candidate, argTypes)
+    } yield candidate
 
-      val candidates =  for {
-        candidate <- clazz.getConstructors
-        if matches(candidate, argTypes)
-      } yield candidate
-
-      if (candidates.isEmpty) None
-      else Some(candidates.first)
+    if (candidates.isEmpty) None
+    else Some(candidates.first)
   }
-  
+
   /**
    * Attempts to find a setter method in the given class that is used to set
    * the argument with the given argument name and type. It will first attempt
    * to find the Scala convention setter (<code>xxx_=</code>) and failing
    * that it will try to find a Java convention setter (<code>setXxx</code>). If
    * neither is found, <code>None</code> is returned.
-   * 
-   * @param fieldName 
-   * 							name of the field whose setter we are attempting to find
+   *
+   * @param fieldName
+   *               name of the field whose setter we are attempting to find
    * @param argType
-   * 							type of the argument that the setter method expects
+   *               type of the argument that the setter method expects
    * @param clazz
-   * 							class that we are inspecting to find the method
+   *               class that we are inspecting to find the method
    * @return <code>Some</code> method if it was found, <code>None</code> otherwise
-   * 
+   *
    * @throws IllegalArgumentException if any of the supplied arguments is null
    */
-  def findSetter(fieldName: Symbol, argType: Class[_], clazz: Class[_]): 
-    Option[Method] = {
-    
+  def findSetter(fieldName: Symbol, argType: Class[_], clazz: Class[_]): Option[Method] = {
+
     require(fieldName != null)
     require(argType != null)
     require(clazz != null)
-    
+
     val scalaName = fieldName.name + scalaSuffix
     val scalaMethod = getMethod(scalaName, argType, clazz)
     if (scalaMethod.isDefined) scalaMethod
     else {
       val javaName = javaPrefix + fieldName.name.capitalize
       getMethod(javaName, argType, clazz)
-    } 
+    }
   }
-  
+
   /**
    * Convenience method that converts an array of Any objects to an array of
    * AnyRefs. This is useful when instantiating a new instance of an object
@@ -82,7 +79,7 @@ private[skadi] final object ReflectionUtils {
    * gets confused attempting to apply implicit conversions).
    *
    * @param args
-   * 					an array of Any to be converted
+   *           an array of Any to be converted
    * @return an array of references
    *
    * @throws IllegalArgumentException if null is passed to the method
@@ -96,7 +93,7 @@ private[skadi] final object ReflectionUtils {
    * Determines the correct class of a primitive value.
    *
    * @param x
-   * 				some primitive value
+   *         some primitive value
    * @return the type of the given primitive value
    *
    * @throws IllegalArgumentException if x's type is not supported
@@ -114,14 +111,14 @@ private[skadi] final object ReflectionUtils {
     case x: AnyRef => x.getClass
     case _ => error(x + " is not of supported type.")
   }
-  
+
   /**
-   * Converts <code>Any</code> to <code>AnyRef</code>. This is needed when 
+   * Converts <code>Any</code> to <code>AnyRef</code>. This is needed when
    * invoking constructors or methods that expect <code>java.lang.Object</code>
    * parameters.
-   * 
-   * @param x 
-   * 				an object of type <code>Any</code>
+   *
+   * @param x
+   *         an object of type <code>Any</code>
    * @return the supplied object converted to <code>AnyRef</code>
    */
   def anyToRef(x: Any): AnyRef = x match {
@@ -129,18 +126,16 @@ private[skadi] final object ReflectionUtils {
     case v: AnyVal => valToRef(v)
   }
 
-  private def getMethod(methodName: String, argType: Class[_], clazz: Class[_]):
-    Option[Method] = {
+  private def getMethod(methodName: String, argType: Class[_], clazz: Class[_]): Option[Method] = {
     try {
       val method = clazz.getMethod(methodName, argType)
       Some(method)
     } catch {
-      case e: java.lang.NoSuchMethodException => None 
+      case e: java.lang.NoSuchMethodException => None
     }
-  }   
+  }
 
-  private def matches(constructor: Constructor[_], argTypes: Array[Class[_]]):
-    Boolean = {
+  private def matches(constructor: Constructor[_], argTypes: Array[Class[_]]): Boolean = {
 
     val paramTypes = constructor.getParameterTypes
     if (argTypes.length == paramTypes.length) {

@@ -42,13 +42,10 @@ private[skadi] object BeanUtils {
    *           in case that a supplied argument's type is not supported
    * @throws IllegalArgumentException if the supplied args or map are null
    */
-  def getArgTypes(args: Iterable[Any], beansMap: Map[Symbol, AbstractBean]): Iterable[Class[_]] = {
-
+  def getArgTypes(args: List[Any], beansMap: Map[Symbol, AbstractBean]): List[Class[_]] = {
       require(args != null)
       require(beansMap != null)
-
-      for (arg <- args)
-      yield getArgType(arg, beansMap)
+      args.map(getArgType(_, beansMap))
   }
 
   /**
@@ -63,12 +60,9 @@ private[skadi] object BeanUtils {
    * @throws IllegalArgumentException if the supplied arg or map are null
    */
   def getSetterArgType(setterArg: (Any, Symbol), beansMap: Map[Symbol, AbstractBean]): Class[_] = {
-
     require(setterArg != null)
     require(beansMap != null)
-
-    val arg = setterArg._1
-    getArgType(arg, beansMap)
+    getArgType(setterArg._1, beansMap)
   }
 
   /**
@@ -83,7 +77,7 @@ private[skadi] object BeanUtils {
    */
   def createFactoryBeans(beans: Seq[Bean]): Seq[FactoryBean] = {
     require(beans != null)
-    val beansMap = BeanUtils.createBeansMap(beans)
+    val beansMap = createBeansMap(beans)
     beans.map(createFactoryBean(_, beansMap))
   }
 
@@ -98,9 +92,7 @@ private[skadi] object BeanUtils {
    * @throws IllegalArgumentException if the passed beans are null
    */
   def createBeansMap(beans: Seq[Bean]): Map[Symbol, Bean] = {
-
     require(beans != null)
-
     Map.empty ++ beans.map(b => (b.name, b))
   }
 
@@ -115,9 +107,7 @@ private[skadi] object BeanUtils {
    * @throws IllegalArgumentException if the passed beans are null
    */
   def createFactoryBeansMap(beans: Seq[FactoryBean]): Map[Symbol, FactoryBean] = {
-
     require(beans != null)
-
     Map.empty ++ beans.map(b => (b.name, b))
   }
 
@@ -131,19 +121,18 @@ private[skadi] object BeanUtils {
    * @throws IllegalArgumentException if the passed beans are null
    */
   def extractBeanNames(beans: Seq[Bean]): Seq[Symbol] = {
-
     require(beans != null)
-
-    beans.map(_.name).toSeq
+    beans.map(_.name)
   }
 
   private def createFactoryBean(bean: Bean, beansMap: Map[Symbol, Bean]): FactoryBean = {
 
-    val argTypes = getArgTypes(bean.args, beansMap).toSeq.toArray
+    val argTypes = getArgTypes(bean.args, beansMap).toArray
     val constructor = ReflectionUtils.findConstructor(bean.clazz, argTypes)
     assume(constructor.isDefined)
     val factoryBean = new FactoryBean(bean)
     factoryBean.constructor = constructor.get
+
     factoryBean
   }
 
