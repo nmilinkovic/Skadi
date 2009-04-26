@@ -17,6 +17,17 @@
   </description>
   <inceptionYear>2009</inceptionYear>
 
+  <scm>
+    <url>git://github.com/nmilinkovic/Skadi.git</url>
+  </scm>
+
+  <licenses>
+    <license>
+       <name>New BSD License</name>
+       <url>http://www.opensource.org/licenses/bsd-license.php</url>
+    </license>
+  </licenses>
+
   <developers>
     <developer>
       <name>Nikola Milinkovic</name>
