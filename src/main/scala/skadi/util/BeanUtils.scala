@@ -25,7 +25,6 @@ private[skadi] object BeanUtils {
    */
   def getArgType(arg: Any, beansMap: Map[Symbol, AbstractBean]): Class[_] = arg match {
     case s: Symbol if (beansMap.contains(s)) => beansMap.get(s).get.clazz
-    //case Ref(r) => beansMap.get(r).get.clazz
     case Val(v) => ReflectionUtils.getType(v)
     case v: AnyVal => ReflectionUtils.getType(v)
     case r: AnyRef => r.getClass
@@ -43,14 +42,13 @@ private[skadi] object BeanUtils {
    *           in case that a supplied argument's type is not supported
    * @throws IllegalArgumentException if the supplied args or map are null
    */
-  def getArgTypes(args: Iterable[Any], beansMap: Map[Symbol, AbstractBean]):
-    Iterable[Class[_]] = {
+  def getArgTypes(args: Iterable[Any], beansMap: Map[Symbol, AbstractBean]): Iterable[Class[_]] = {
 
       require(args != null)
       require(beansMap != null)
 
       for (arg <- args)
-        yield getArgType(arg, beansMap)
+      yield getArgType(arg, beansMap)
   }
 
   /**
@@ -64,8 +62,7 @@ private[skadi] object BeanUtils {
    *           in case that a supplied argument's type is not supported
    * @throws IllegalArgumentException if the supplied arg or map are null
    */
-  def getSetterArgType(setterArg: (Any, Symbol), beansMap: Map[Symbol, AbstractBean]):
-    Class[_] = {
+  def getSetterArgType(setterArg: (Any, Symbol), beansMap: Map[Symbol, AbstractBean]): Class[_] = {
 
     require(setterArg != null)
     require(beansMap != null)
@@ -85,6 +82,7 @@ private[skadi] object BeanUtils {
    * @throws IllegalArgumentException if the passed beans are null
    */
   def createFactoryBeans(beans: Seq[Bean]): Seq[FactoryBean] = {
+
     require(beans != null)
 
     val beansMap = BeanUtils.createBeansMap(beans)
@@ -136,8 +134,7 @@ private[skadi] object BeanUtils {
     beans.map(_.name).toSeq
   }
 
-  private def createFactoryBean(bean: Bean, beansMap: Map[Symbol, Bean]):
-    FactoryBean = {
+  private def createFactoryBean(bean: Bean, beansMap: Map[Symbol, Bean]): FactoryBean = {
 
     val argTypes = getArgTypes(bean.args, beansMap).toSeq.toArray
     val constructor = ReflectionUtils.findConstructor(bean.clazz, argTypes)

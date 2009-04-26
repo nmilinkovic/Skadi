@@ -33,8 +33,7 @@ private[container] class PropertiesResolver extends BeanProcessor {
   }
 
   // replaces placeholders in constructor arguments and injectables
-  private def resolveProperties(bean: Bean, userProps: Properties,
-                                sysProps: Properties): Bean = {
+  private def resolveProperties(bean: Bean, userProps: Properties, sysProps: Properties): Bean = {
     // TODO find out how to deal with non-string properties
     bean.args = bean.args.map(resolveProperty(_, userProps, sysProps))
     bean.injectables = bean.injectables.map(i => (resolveProperty(i._1, userProps, sysProps),
@@ -42,31 +41,26 @@ private[container] class PropertiesResolver extends BeanProcessor {
     bean
   }
 
-  private def resolveProperty(x: Any, userProps: Properties,
-                              sysProps: Properties): Any = x match {
+  private def resolveProperty(x: Any, userProps: Properties, sysProps: Properties): Any = x match {
     case Property(placeholder) => getProperty(placeholder, userProps, sysProps)
     case Prop(placeholder) => getProperty(placeholder, userProps, sysProps)
     case _ => x
   }
 
-  private def getProperty(placeholder: String, userProperties: Properties,
-                                systemProperties: Properties): Any = {
+  private def getProperty(placeholder: String, userProperties: Properties, systemProperties: Properties): Any = {
     // first check in user defined properties
     val property = if (userProperties.containsKey(placeholder)) {
       userProperties.getProperty(placeholder)
-
       // if not there, try system properties
     } else {
       systemProperties.getProperty(placeholder)
     }
-    require(property != null, "Property placeholder '" + placeholder + "' " +
-              "could not be resolved!")
+    require(property != null, "Property placeholder '" + placeholder + "' could not be resolved!")
     property
   }
 
   // reads user defined properties
   private def readUserProperties(handles: Seq[Bean]): Properties = {
-
     val classloader = if (currentThread.getContextClassLoader != null) {
       currentThread.getContextClassLoader
     } else getClass.getClassLoader
@@ -86,9 +80,7 @@ private[container] class PropertiesResolver extends BeanProcessor {
   }
 
   // attempts to read properties from either a regular or xml properties file
-  private def loadProperties(filename: String, properties: Properties,
-                             classloader: ClassLoader): Unit = {
-
+  private def loadProperties(filename: String, properties: Properties, classloader: ClassLoader): Unit = {
     val stream = classloader.getResourceAsStream(filename)
     require(stream != null, "'" + filename + "' not found on the classpath!")
 
@@ -99,6 +91,5 @@ private[container] class PropertiesResolver extends BeanProcessor {
       properties.load(stream)
     }
   }
-
 
 }

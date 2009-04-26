@@ -35,9 +35,7 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
     } yield bean
   }
 
-  private def constructGraph(namesMap: Map[Symbol, Bean]):
-    Set[(Symbol, Set[Symbol])] = {
-
+  private def constructGraph(namesMap: Map[Symbol, Bean]): Set[(Symbol, Set[Symbol])] = {
     val nodes = for {
       name <- namesMap.keys
       names = namesMap.keySet.toList
@@ -46,21 +44,17 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
       setterDependencies = extractNames(bean.injectables.map(_._2), names)
       dependencies = constructorDependencies ++ setterDependencies
     } yield (name, dependencies)
-
     Set.empty ++ nodes
   }
 
-  private def extractNames(args: List[Any], allNames: List[Symbol]):
-    Set[Symbol] = {
+  private def extractNames(args: List[Any], allNames: List[Symbol]): Set[Symbol] = {
     // names of other beans in the argument list represent  beans that this
     // bean depends on
     val extractedNames = new mutable.ListBuffer[Symbol]
     for (arg <- args) arg match {
       case name: Symbol if (allNames.contains(name)) => extractedNames += name
-     // case Ref(name) => extractedNames += name
       case _ => //not a reference, ignore it
     }
-
     val result = mutable.Set.empty[Symbol]
     for (eachName <- extractedNames) {
       result += eachName
@@ -85,29 +79,36 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
 
     require(nodes != null, "Graph nodes passed as null!")
 
-    //Finds all nodes that have no more dependencies
+    // Finds all nodes that have no more dependencies
     def findEnds(nodes: Set[(T, Set[T])]): Set[(T, Set[T])] = {
-      for (node <- nodes
-           if (node._2.isEmpty))
-        yield node
+      for {
+        node <- nodes
+        if (node._2.isEmpty)
+      }  yield node
     }
 
-    //Removes the ends from the graph, also remove them from the dependencies
-    //of the remaining nodes. Returns a set of remaining nodes.
-    def removeEnds(ends: Set[(T, Set[T])], nodes: Set[(T, Set[T])]):
-      Set[(T, Set[T])] = {
-      val prunedNodes = for (node <- nodes
-                             if (!ends.contains(node))
-      ) yield (node._1, node._2 -- ends.map(_._1))
+    // extracts the names from the given nodes
+    def extractNames(nodes: Set[(T, Set[T])]): Seq[T] = {
+      nodes.map(_._1).toSeq
+    }
+
+    // Removes the ends from the graph, also remove them from the dependencies
+    // of the remaining nodes. Returns a set of remaining nodes.
+    def removeEnds(ends: Set[(T, Set[T])], nodes: Set[(T, Set[T])]): Set[(T, Set[T])] = {
+      val prunedNodes = for {
+        node <- nodes
+        if (!ends.contains(node))
+      } yield (node._1, node._2 -- extractNames(ends))
       Set.empty ++ prunedNodes
     }
 
-    if (nodes.toList.size <= 1) nodes.map(_._1).toSeq
+    // main algorithm
+    if (nodes.size <= 1) extractNames(nodes)
     else {
      val ends = findEnds(nodes)
      require(!ends.isEmpty, "Cyclic dependency detected in nodes: " + nodes)
      val prunedNodes = removeEnds(ends, nodes)
-     ends.map(_._1).toSeq ++ topSort(prunedNodes)
+     extractNames(ends) ++ topSort(prunedNodes)
     }
   }
 

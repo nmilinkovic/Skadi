@@ -10,16 +10,16 @@ import skadi.exception.BeanNotFoundException;
 
 /**
  * Implementation of the {@link BeanRepository}.
+ *
+ * @author Nikola Milinkovic
  */
-private[container] class BeanRepositoryImpl extends InstanceFactoryImpl
-  with BeanRepository with BeanEvaluator {
+private[container] class BeanRepositoryImpl extends InstanceFactoryImpl with BeanRepository with BeanEvaluator {
 
   override def containsBean(name: Symbol): Boolean = context.contains(name)
 
   override def getAllBeanNames(): Set[Symbol] = Set.empty ++ context.keySet
 
   override def getBeanNamesForExactType[T](implicit m: Manifest[T]): Set[Symbol] = {
-
     val names = for {
       bean <- context.values
       if (bean.clazz == m.erasure)
@@ -28,9 +28,7 @@ private[container] class BeanRepositoryImpl extends InstanceFactoryImpl
     Set.empty ++ names
   }
 
-  override def getAssignableBeanNamesForType[T](implicit m: Manifest[T]):
-    Set[Symbol] = {
-
+  override def getAssignableBeanNamesForType[T](implicit m: Manifest[T]): Set[Symbol] = {
     val names = for {
       bean <- context.values
       if (isAssignable(bean.name, m.erasure))

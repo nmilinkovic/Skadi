@@ -12,7 +12,6 @@ object AppBeansDefinition extends BeansDefinition {
 
       new Bean named 'userDao
       implementedWith classOf[com.sample.app.dao.UserDaoImpl]
-      constructorArgs 'userDao
       loadLazily,
 
       new Bean named 'userService
