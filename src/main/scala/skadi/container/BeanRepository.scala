@@ -2,12 +2,14 @@ package skadi.container
 
 import scala.reflect.Manifest
 
+import skadi.beans.FactoryBean;
+
 /**
  * Defines methods for accessing beans that are defined in the container.
  *
  * @author Nikola Milinkovic
  */
-trait BeanRepository {
+trait BeanRepository extends BeanEvaluator {
 
   /**
    * Returns <tt>true</tt> if the bean with the given name is defined within
@@ -17,7 +19,7 @@ trait BeanRepository {
    *       name of the bean used to look it up
    * @return <tt>true</tt> if the bean is defined, <tt>false</tt> otherwise
    */
-  def containsBean(name: Symbol): Boolean
+  def containsBean(name: Symbol): Boolean = context.contains(name)
 
   /**
    * Returns the total count of the beans that were defined by the user.
@@ -31,7 +33,7 @@ trait BeanRepository {
    *
    * @return a set of defined bean names
    */
-  def getAllBeanNames(): Set[Symbol]
+  def getAllBeanNames(): Set[Symbol] = Set.empty ++ context.keySet
 
   /**
    * Returns a set of names of the beans that are implemented with
@@ -42,7 +44,9 @@ trait BeanRepository {
    * @return a set of names of the beans that are implemented with the supplied
    * class
    */
-  def getBeanNamesForExactType[T](implicit m: Manifest[T]) : Set[Symbol]
+  def getBeanNamesForExactType[T](implicit m: Manifest[T]) : Set[Symbol] = {
+    getFilteredBeanNames(b => b.clazz == m.erasure)
+  }
 
   /**
    * Returns a set of bean names that are assignable the supplied class.
@@ -51,6 +55,14 @@ trait BeanRepository {
    *
    * @return a set of bean names that are assignable to the class
    */
-  def getAssignableBeanNamesForType[T](implicit m: Manifest[T]): Set[Symbol]
+  def getAssignableBeanNamesForType[T](implicit m: Manifest[T]): Set[Symbol] = {
+    getFilteredBeanNames(b => isAssignable(b.name, m.erasure))
+  }
+
+  private def getFilteredBeanNames(f: (FactoryBean) => Boolean): Set[Symbol] = {
+    val matchingBeans = context.values.filter(f)
+    val names = matchingBeans.map(_.name)
+    Set.empty ++ names
+  }
 
 }

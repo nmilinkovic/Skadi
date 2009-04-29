@@ -42,7 +42,7 @@ private[skadi] object BeanUtils {
    *           in case that a supplied argument's type is not supported
    * @throws IllegalArgumentException if the supplied args or map are null
    */
-  def getArgTypes(args: List[Any], beansMap: Map[Symbol, AbstractBean]): List[Class[_]] = {
+  def getArgTypes(args: Array[Any], beansMap: Map[Symbol, AbstractBean]): Array[Class[_]] = {
       require(args != null)
       require(beansMap != null)
       args.map(getArgType(_, beansMap))
@@ -127,7 +127,7 @@ private[skadi] object BeanUtils {
 
   private def createFactoryBean(bean: Bean, beansMap: Map[Symbol, Bean]): FactoryBean = {
 
-    val argTypes = getArgTypes(bean.args, beansMap).toArray
+    val argTypes = getArgTypes(bean.args.toArray, beansMap)
     val constructor = ReflectionUtils.findConstructor(bean.clazz, argTypes)
     assume(constructor.isDefined)
     val factoryBean = new FactoryBean(bean)

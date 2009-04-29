@@ -31,6 +31,7 @@ private[skadi] final object ReflectionUtils {
 
     require(clazz != null)
     require(argTypes != null)
+
     val candidates =  for {
       candidate <- clazz.getConstructors
       if matches(candidate, argTypes)

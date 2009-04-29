@@ -27,9 +27,11 @@ private[skadi] class FactoryBean(bean: Bean) extends AbstractBean {
   // initialize basic values
   this.name = bean.name
   this.clazz = bean.clazz
-  this.args = bean.args
-  this.injectables = bean.injectables
+  this.args ++= bean.args
+  this.injectables ++= bean.injectables
+  this.initMethod = bean.initMethod
+  this.initArgs ++= bean.initArgs
   this.scope = bean.scope
-  this.lazyBean = bean.lazyBean  
+  this.lazyBean = bean.lazyBean
 
 }

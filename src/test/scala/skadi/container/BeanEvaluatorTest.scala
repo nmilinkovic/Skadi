@@ -6,74 +6,74 @@ import com.sample.app.service._
 import com.sample.app.model._
 
 import skadi.util.BeanUtils
+import skadi.exception.BeanNotFoundException
 
 class BeanEvaluatorTest {
 
   private val undefinedName = 'nosuchbean
-  private val beans = BeanUtils.createFactoryBeans(com.sample.app.AppBeansDefinition.getBeans)
 
   // class under test
-  private val evaluator = new BeanRepositoryImpl
-  evaluator.init(beans)
+  private val evaluator: BeanEvaluator = new Container(com.sample.app.AppBeansDefinition.getBeans)
 
-  @Test
+
+  @Test { val expected = classOf[BeanNotFoundException] }
   def testIsSingleton = {
-    checkThrowsException(undefinedName, evaluator.isSingleton)
+
     Assert.assertTrue(evaluator.isSingleton('postDao))
     Assert.assertFalse(evaluator.isSingleton('user))
+
+    evaluator.isSingleton(undefinedName)
+    ()
   }
 
-  @Test
+  @Test { val expected = classOf[BeanNotFoundException] }
   def testIsPrototype = {
-    checkThrowsException(undefinedName, evaluator.isPrototype)
+
     Assert.assertFalse(evaluator.isPrototype('postDao))
     Assert.assertTrue(evaluator.isPrototype('user))
+
+    evaluator.isPrototype(undefinedName)
+    ()
   }
 
-  @Test
+  @Test { val expected = classOf[BeanNotFoundException] }
   def testIsAssignable = {
-    var exceptionCaught = false
-    try {
-      evaluator.isAssignable(undefinedName, classOf[String])
-    } catch {
-      case e: skadi.exception.BeanNotFoundException => exceptionCaught = true
-    }
-    Assert.assertTrue(exceptionCaught)
 
     Assert.assertTrue(evaluator.isAssignable('userDao, classOf[UserDao]))
     Assert.assertFalse(evaluator.isAssignable('postDao, classOf[UserDao]))
+
+    evaluator.isAssignable(undefinedName, classOf[String])
+    ()
   }
 
-  @Test
+  @Test { val expected = classOf[BeanNotFoundException] }
   def testIsLazy = {
-    checkThrowsException(undefinedName, evaluator.isLazy)
+
     Assert.assertTrue(evaluator.isLazy('userDao))
     Assert.assertFalse(evaluator.isLazy('user))
+
+    evaluator.isLazy(undefinedName)
+    ()
   }
 
-  @Test
+  @Test { val expected = classOf[BeanNotFoundException] }
   def testGetType = {
-    checkThrowsException(undefinedName, evaluator.getType)
+
     Assert.assertEquals(classOf[UserDaoImpl], evaluator.getType('userDao))
     Assert.assertNotSame(classOf[UserDaoImpl], evaluator.getType('postDao))
+
+    evaluator.getType(undefinedName)
+    ()
   }
 
   @Test
   def testGetOptionalType = {
+
     val undefined = evaluator.getOptionalType(undefinedName)
     Assert.assertFalse(undefined.isDefined)
+
     val defined = evaluator.getOptionalType('userDao)
     Assert.assertTrue(defined.isDefined)
-  }
-
-  private def checkThrowsException(beanName: Symbol, f:(Symbol) => Any) = {
-    var exceptionCaught = false
-    try {
-      f(beanName)
-    } catch {
-      case e: skadi.exception.BeanNotFoundException => exceptionCaught = true
-    }
-    Assert.assertTrue(exceptionCaught)
   }
 
 }

@@ -8,11 +8,8 @@ import skadi.util.BeanUtils
 
 class BeanRepositoryTest {
 
-  private val beans = BeanUtils.createFactoryBeans(com.sample.app.AppBeansDefinition.getBeans)
-
   // class under test
-  private val repository= new BeanRepositoryImpl
-  repository.init(beans)
+  private val repository: BeanRepository = new Container(com.sample.app.AppBeansDefinition.getBeans)
 
   @Test
   def testContainsBean {

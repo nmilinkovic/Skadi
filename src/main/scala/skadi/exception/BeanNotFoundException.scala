@@ -6,4 +6,4 @@ package skadi.exception
  *
  * @author Nikola Milinkovic
  */
-class BeanNotFoundException(msg: String) extends RuntimeException(msg)
+class BeanNotFoundException(msg: String) extends SkadiException(msg)

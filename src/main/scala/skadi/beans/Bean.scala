@@ -1,6 +1,5 @@
 package skadi.beans
 
-import scala.collection.mutable
 import scala.reflect.Manifest
 
 /**
@@ -171,14 +170,20 @@ class Bean extends AbstractBean {
   }
 
   override def toString(): String = {
-    var items = new mutable.ListBuffer[String]()
-    if (beanNamed) items += "name = " + name.name
-            else items += "Unnamed bean"
-    if (clazz != null) items += "class = " + clazz
-    items += "scope = " + scope
-    items += "lazy = " + lazyBean
 
-    items.mkString("Bean [", ", ", "]")
+    val builder = new StringBuilder
+    builder.append("Bean [")
+    val beanName = if (beanNamed) "name = " + name.name
+           else "Unnamed bean"
+    builder.append(beanName)
+    builder.append(", ")
+    if (clazz != null) builder.append("class = " + clazz + ", ")
+    builder.append("scope = " + scope)
+    builder.append(", ")
+    builder.append("lazy = " + lazyBean)
+    builder.append("]")
+
+    builder.toString
   }
 
 }

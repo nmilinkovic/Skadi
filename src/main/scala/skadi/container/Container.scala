@@ -1,53 +1,20 @@
 package skadi.container
 
 import skadi.beans.Bean;
-import skadi.container.processing.BeanProcessor
-import skadi.container.processing.FactoryBeanProcessor
-import skadi.container.validation.Validator
-import skadi.util.Loggable
-import skadi.util.BeanUtils
+import skadi.container.processing.TopologicalBeanSorter
+import skadi.container.processing.PropertiesResolver
 
-trait Container extends BeanRepository with BeanEvaluator with InstanceFactory
-  with Loggable {
+class Container(beans: Seq[Bean]) extends BeanRepository {
 
-  protected def validator: Validator
-  protected def preprocessors: List[BeanProcessor]
-  protected def postprocessors: List[FactoryBeanProcessor]
+  override protected def validators = Nil
 
-  protected def load(beans: Seq[Bean]): Unit = {
-    try {
+  override protected def preprocessors = new TopologicalBeanSorter ::
+                                         new PropertiesResolver :: Nil
 
-      // validate
-      val errorMessages = validator.validate(beans)
-      if (!errorMessages.isEmpty) {
-        val msg = errorMessages.mkString("Unable to load context. Reason:\n",
-                                         "\n", "\nExiting...")
-        exitOnError(msg)
-      }
+  override protected def postprocessors = Nil
 
-      // pre-process
-      var validatedBeans = beans
-      for (preprocessor <- preprocessors){
-        validatedBeans = preprocessor.process(validatedBeans)
-      }
+  override protected def instanceProcessors = Nil
 
-      // create factory beans
-      var factoryBeans = BeanUtils.createFactoryBeans(validatedBeans)
+  initialize(beans)
 
-      // post-process
-      for (postprocessor <- postprocessors) {
-        factoryBeans = postprocessor.process(factoryBeans)
-      }
-
-      init(factoryBeans)
-
-    } catch {
-      case e: Throwable => exitOnError(e.getMessage)
-    }
-  }
-
-  private[this] def exitOnError(message:String) {
-    log.severe(message)
-    System.exit(1)
-  }
 }

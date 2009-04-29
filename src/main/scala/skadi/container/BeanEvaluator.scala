@@ -1,12 +1,14 @@
 package skadi.container
 
+import skadi.beans.Scope
+
 /**
  * Performs different evaluations on a bean that is defined within the
  * container.
  *
  * @author Nikola Milinkovic
  */
-trait BeanEvaluator {
+trait BeanEvaluator extends InstanceFactory {
 
   /**
    * Returns <tt>true</tt> if the bean with the supplied name is scoped as singleton,
@@ -18,7 +20,10 @@ trait BeanEvaluator {
    *
    * @throws BeanNotFoundException
    */
-  def isSingleton(name: Symbol): Boolean
+  def isSingleton(name: Symbol): Boolean = {
+    val bean = findBean(name)
+    bean.scope == Scope.Singleton
+  }
 
   /**
    * Returns <tt>true</tt> if the bean with the supplied name is scoped as prototype,
@@ -30,7 +35,10 @@ trait BeanEvaluator {
    *
    * @throws BeanNotFoundException
    */
-  def isPrototype(name: Symbol): Boolean
+  def isPrototype(name: Symbol): Boolean = {
+    val bean = findBean(name)
+    bean.scope == Scope.Prototype
+  }
 
   /**
    * Returns <tt>true</tt> if the bean with the supplied name is assignable to
@@ -44,7 +52,10 @@ trait BeanEvaluator {
    *
    * @throws BeanNotFoundException
    */
-  def isAssignable(name: Symbol, clazz: Class[_]): Boolean
+  def isAssignable(name: Symbol, clazz: Class[_]): Boolean = {
+    val bean = findBean(name)
+    clazz.isAssignableFrom(bean.clazz)
+  }
 
   /**
    * Returns <tt>true</tt> if the bean with the supplied name is loaded lazily
@@ -56,7 +67,10 @@ trait BeanEvaluator {
    *
    * @throws BeanNotFoundException
    */
-  def isLazy(name: Symbol): Boolean
+  def isLazy(name: Symbol): Boolean = {
+    val bean = findBean(name)
+    bean.lazyBean
+  }
 
   /**
    * Returns the implementing class of the bean with the supplied name.
@@ -67,7 +81,10 @@ trait BeanEvaluator {
    *
    * @throws BeanNotFoundException
    */
-  def getType(name: Symbol): Class[_]
+  def getType(name: Symbol): Class[_] = {
+    val bean = findBean(name)
+    bean.clazz
+  }
 
   /**
    * Optionally returns the implementing class of the bean with the supplied
@@ -80,6 +97,10 @@ trait BeanEvaluator {
    * @return <tt>Some</tt> implementing class of the bean if it is defined,
    * <tt>None</tt> otherwise
    */
-  def getOptionalType(name: Symbol): Option[Class[_]]
+  def getOptionalType(name: Symbol): Option[Class[_]] = {
+    val bean = context.get(name)
+    if (bean.isDefined) Some(bean.get.clazz)
+    else None
+  }
 
 }
