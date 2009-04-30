@@ -12,12 +12,12 @@ private[skadi] object Scope extends Enumeration {
    * Bean is scoped as a singleton, meaning that only one instance of the bean
    * is created and is shared among the beans that require it.
    */
-  val Singleton = Value
+  val Singleton = Value("Singleton")
 
   /**
    * Bean is scoped as prototype, meaning that every bean that depends on this
    * bean will receive a new instance that is unique for that bean.
    */
-  val Prototype = Value
+  val Prototype = Value("Prototype")
 
 }

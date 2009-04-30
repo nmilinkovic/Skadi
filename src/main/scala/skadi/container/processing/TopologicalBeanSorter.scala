@@ -26,6 +26,9 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
    * @return a sequence of beans sorted in topological order
    */
   override def process(beans: Seq[Bean]): Seq[Bean] = {
+
+    log.info("Sorting the beans...")
+
     val namesMap = Map.empty ++ beans.map(b => (b.name, b))
     val graph = constructGraph(namesMap)
     val sortedNames = topSort[Symbol](graph)

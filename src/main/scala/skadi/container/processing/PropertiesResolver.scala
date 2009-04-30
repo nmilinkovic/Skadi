@@ -20,6 +20,9 @@ private[container] class PropertiesResolver extends BeanProcessor {
   private val xml = "xml"
 
   override def process(beans: Seq[Bean]): Seq[Bean] = {
+
+    log.info("Resolving properties...")
+
     val handles = beans.filter(classOf[skadi.util.PropertiesHandle] == _.clazz)
     val userProperties = readUserProperties(handles)
 

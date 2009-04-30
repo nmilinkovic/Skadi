@@ -1,13 +1,10 @@
 package skadi.container
 
-import java.lang.reflect.Modifier
+import scala.collection.mutable
 
 import skadi.beans.Bean
-import skadi.beans.FactoryBean
 import skadi.container.processing.BeanProcessor
-import skadi.container.processing.FactoryBeanProcessor
 import skadi.container.validation.Validator
-import skadi.util.BeanUtils
 import skadi.util.Loggable
 
 /**
@@ -18,13 +15,11 @@ import skadi.util.Loggable
  */
 private[container] trait Initializer extends Loggable {
 
-  private var beansMap: Map[Symbol, FactoryBean] = null
-
   /**
    * The application context, contains each defined bean registered under its
    * unique name in the map.
    */
-  protected def context = beansMap
+  protected val context = new mutable.HashMap[Symbol, Bean]
 
   /**
    * Define the validators that should perform the validation on the supplied
@@ -33,20 +28,15 @@ private[container] trait Initializer extends Loggable {
   protected def validators: List[Validator]
 
   /**
-   * Define preprocessors that will process the validated bean.
+   * Define processors that will process the validated bean.
    */
-  protected def preprocessors: List[BeanProcessor]
+  protected def beanProcessors: List[BeanProcessor]
 
   /**
-   * Define the processors that will operate on the created factory beans.
-   */
-  protected def postprocessors: List[FactoryBeanProcessor]
-
-  /**
-   * Override this method to perform the initalization of a single bean within
+   * Implement this method to perform the initalization of a single bean within
    * the context.
    */
-  protected def initBean(bean: FactoryBean): FactoryBean
+  protected def initInstance(bean: Bean): Bean
 
   /**
    * Initializes the context by processing the supplied beans.
@@ -55,29 +45,27 @@ private[container] trait Initializer extends Loggable {
 
     try {
 
-      // validate
-//      val errorMessages = validator.validate(beans)
-//      if (!errorMessages.isEmpty) {
-//        val msg = errorMessages.mkString("Unable to load context. Reason:\n", "\n", "\nExiting...")
-//        exitOnError(msg)
-//      }
-
-      // pre-process
-      var validatedBeans = beans
-      for (preprocessor <- preprocessors){
-        validatedBeans = preprocessor.process(validatedBeans)
+      // validate user input
+      log.info("Starting validation...")
+      val errors = validators.foldRight(List[String]())(_.validate(beans) ::: _)
+      if (!errors.isEmpty) {
+        val msg = errors.mkString("Unable to initialize the container. Reason:\n", "\n", "\nExiting...")
+        exitOnError(msg)
       }
+      log.info("Validation complete.")
 
-      // create factory beans
-      var factoryBeans = BeanUtils.createFactoryBeans(validatedBeans)
+      // process the beans
+      log.info("Starting processing...")
+      var processedBeans = beanProcessors.foldRight(beans)(_.process(_))
+      log.info("Processing complete.")
 
-      // post-process
-      for (postprocessor <- postprocessors) {
-        factoryBeans = postprocessor.process(factoryBeans)
-      }
+      // populate the context
+      context ++= processedBeans.map(b => (b.name, b))
+      log.info("Context created with " + context.size + " beans.")
 
-     beansMap = BeanUtils.createFactoryBeansMap(factoryBeans)
-     factoryBeans.foreach(initBean(_))
+
+      processedBeans.foreach(initInstance(_))
+      log.info("Container started.")
 
     } catch {
       case e: Throwable => exitOnError(e.getMessage)
@@ -86,7 +74,7 @@ private[container] trait Initializer extends Loggable {
 
   private[this] def exitOnError(message:String) {
     log.severe(message)
-    System.exit(1)
+    //System.exit(1)
   }
 
 }

@@ -5,7 +5,6 @@ import com.sample.app.dao._
 import com.sample.app.service._
 import com.sample.app.model._
 
-import skadi.util.BeanUtils
 import skadi.exception.BeanNotFoundException
 
 class BeanEvaluatorTest {

@@ -16,7 +16,7 @@ import scala.reflect.Manifest
  * </pre>
  *
  */
-class Bean extends AbstractBean {
+class Bean {
 
   /**
    * Define the name for this bean using this method. The name must be unique
@@ -185,6 +185,72 @@ class Bean extends AbstractBean {
 
     builder.toString
   }
+
+  /**
+   * Unique name of the bean, used to identify the bean within the application
+   * context. Initialized with an UUID, in case the bean is not named explicitly
+   * by the user.
+   */
+  private[skadi] var name = Symbol(java.util.UUID.randomUUID.toString)
+
+  /**
+   * Actual class of this bean.
+   */
+  private[skadi] var clazz: Class[_] = null
+
+  /**
+   * Constructor arguments that will be used to create an instance of this bean
+   * when necessary.
+   */
+  private[skadi] var args: List[Any] = Nil
+
+  /**
+   * Values that will be injected after creation of the instance via setter
+   * methods.
+   */
+  private[skadi] var injectables: List[(Any, Symbol)] = Nil
+
+  /**
+   * Initialization method that will be invoked on the instance of this bean
+   * after it has been constructed and injected with setter dependencies.
+   */
+  private[skadi] var initMethod: Symbol = null
+
+  /**
+   * Optional arguments that go in the initialization method.
+   */
+  private[skadi] var initArgs: List[Any] = Nil
+
+  /**
+   * Scope of this bean, defaults to <tt>Singleton</tt>.
+   */
+  private[skadi] var scope = Scope.Singleton
+
+  /**
+   * Is the bean loaded lazily, defaults to false.
+   */
+  private[skadi] var lazyBean = false
+
+  /**
+   * Determines if the bean was named explicitly by the user.
+   */
+  private[skadi] var beanNamed = false
+
+  /**
+   * Constructor that is used to instantiate the target class.
+   */
+  private[skadi] var constructor: java.lang.reflect.Constructor[_] = null
+
+  /**
+   * The instance of the target class, created using the given constructor
+   * arguments and injected with the setter arguments.
+   */
+  private[skadi] var instance: Any = null
+
+  /**
+   * Determines if the target class is abstract or not.
+   */
+  private[skadi] var abstractClass = false
 
 }
 

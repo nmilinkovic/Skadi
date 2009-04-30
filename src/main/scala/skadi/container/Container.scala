@@ -8,10 +8,8 @@ class Container(beans: Seq[Bean]) extends BeanRepository {
 
   override protected def validators = Nil
 
-  override protected def preprocessors = new TopologicalBeanSorter ::
-                                         new PropertiesResolver :: Nil
-
-  override protected def postprocessors = Nil
+  override protected def beanProcessors = new TopologicalBeanSorter ::
+                                          new PropertiesResolver :: Nil
 
   override protected def instanceProcessors = Nil
 

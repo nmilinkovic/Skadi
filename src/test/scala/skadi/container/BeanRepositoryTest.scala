@@ -4,12 +4,36 @@ import org.junit.{Assert, Test}
 import com.sample.app.dao._
 import com.sample.app.service._
 
-import skadi.util.BeanUtils
+import skadi.exception.BeanNotFoundException;
 
 class BeanRepositoryTest {
 
   // class under test
   private val repository: BeanRepository = new Container(com.sample.app.AppBeansDefinition.getBeans)
+
+  @Test
+  def testGetBean {
+    val userDao = repository.getBean[UserDao]('userDao)
+    Assert.assertNotNull(userDao)
+
+    var exceptionCaught = false
+    try {
+      repository.getBean[UserDao]('nosuchbean)
+    } catch {
+      case e: BeanNotFoundException => exceptionCaught = true
+    }
+    Assert.assertTrue(exceptionCaught)
+  }
+
+  @Test
+  def testGetOptionalBean {
+    val userDao = repository.getOptionalBean[UserDao]('userDao)
+    Assert.assertTrue(userDao.isDefined)
+
+    val undefinedBean = repository.getOptionalBean[UserDao]('nosuchbean)
+    Assert.assertTrue(undefinedBean.isEmpty)
+  }
+
 
   @Test
   def testContainsBean {

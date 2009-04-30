@@ -4,7 +4,6 @@ import org.junit.{Assert, Test}
 import com.sample.app.dao._
 import com.sample.app.service._
 
-import skadi.util.BeanUtils
 import skadi.exception.BeanNotFoundException;
 
 class InstanceFactoryTest {
@@ -13,28 +12,6 @@ class InstanceFactoryTest {
   private val factory: InstanceFactory = new Container(com.sample.app.AppBeansDefinition.getBeans)
 
 
-  @Test
-  def testGetBean {
-    val userDao = factory.getBean[UserDao]('userDao)
-    Assert.assertNotNull(userDao)
-
-    var exceptionCaught = false
-    try {
-      factory.getBean[UserDao]('nosuchbean)
-    } catch {
-      case e: BeanNotFoundException => exceptionCaught = true
-    }
-    Assert.assertTrue(exceptionCaught)
-  }
-
-  @Test
-  def testGetOptionalBean {
-    val userDao = factory.getOptionalBean[UserDao]('userDao)
-    Assert.assertTrue(userDao.isDefined)
-
-    val undefinedBean = factory.getOptionalBean[UserDao]('nosuchbean)
-    Assert.assertTrue(undefinedBean.isEmpty)
-  }
 
   @Test
   def testCreateBeanWithConstructorArgs {

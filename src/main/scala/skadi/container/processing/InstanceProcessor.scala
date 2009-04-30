@@ -1,6 +1,6 @@
 package skadi.container.processing
 
-import skadi.beans.FactoryBean
+import skadi.beans.Bean
 
 /**
  * Used to process each instance of a bean additionaly after it has been created.
@@ -8,8 +8,4 @@ import skadi.beans.FactoryBean
  *
  * @author Nikola Milinkovic
  */
-trait InstanceProcessor {
-
-  def process(bean: FactoryBean): FactoryBean
-
-}
+trait InstanceProcessor extends Processor[Bean]
