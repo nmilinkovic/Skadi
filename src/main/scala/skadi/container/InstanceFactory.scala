@@ -78,8 +78,14 @@ trait InstanceFactory extends ContainerLifecycleManager {
                            + " cannot be instantiated!")
     }
 
-    if (bean.instance == null || bean.scope == Scope.Prototype)
-      createInstance(bean)
+    if (bean.instance == null) {
+      val instance = createInstance(bean)
+      if (bean.instance == null && bean.scope == Scope.Singleton) {
+        // store the instance for reuse
+        bean.instance = instance
+      }
+      instance
+    }
     else
       bean.instance
   }

@@ -24,7 +24,7 @@ trait BeanRepository extends BeanEvaluator {
    *
    * @param name name of the bean that will be retrieved
    *
-   * @return an instance of the bean, cast as <T>
+   * @return an instance of the bean, cast as T
    *
    * @throws BeanNotFoundException if the bean with the given name is not found
    * @throws BeanNotInstantiableException if the requested bean could not be
@@ -38,10 +38,6 @@ trait BeanRepository extends BeanEvaluator {
       throw new ClassCastException(bean + " is not assignable to class " + m.erasure.getName + "!")
     }
     val instance = getInstance(bean)
-    // store the instance for reuse
-    if (bean.instance == null && bean.scope == Scope.Singleton) {
-      bean.instance = instance
-    }
     instance.asInstanceOf[T]
   }
 
@@ -55,7 +51,7 @@ trait BeanRepository extends BeanEvaluator {
    *
    * @param name name of the bean that will be retrieved
    *
-   * @return an instance of the bean, cast as <T>
+   * @return an instance of the bean, cast as T
    */
   def getOptionalBean[T](name: Symbol)(implicit m: Manifest[T]): Option[T] = {
     if (containsBean(name) && isAssignable(name, m.erasure) && isInstantiable(name)) {
