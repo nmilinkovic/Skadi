@@ -8,4 +8,4 @@ import skadi.beans.Bean
  *
  * @author Nikola Milinkovic
  */
-trait InstanceProcessor extends Processor[Bean]
+private[container] trait InstanceProcessor extends Processor[Bean]

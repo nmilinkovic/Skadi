@@ -7,10 +7,10 @@ import skadi.beans.Bean
 
 /**
  * Performs a topological sort of the given beans by creating a dependency graph
- * using bean names as node identifier within the graph.
+ * using bean names as node identifiers within the graph.
  * This allows beans to be instantiated in proper order (i.e. first beans
  * without dependencies are instantiated, then the beans depending on those and
- * then beans depending on a those etc.).
+ * then beans depending on those etc.).
  *
  * @author Nikola Milinkovic
  */
@@ -83,17 +83,10 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
     require(nodes != null, "Graph nodes passed as null!")
 
     // Finds all nodes that have no more dependencies
-    def findEnds(nodes: Set[(T, Set[T])]): Set[(T, Set[T])] = {
-      for {
-        node <- nodes
-        if (node._2.isEmpty)
-      }  yield node
-    }
+    def findEnds(nodes: Set[(T, Set[T])]): Set[(T, Set[T])] = nodes.filter(_._2.isEmpty)
 
     // extracts the names from the given nodes
-    def extractNames(nodes: Set[(T, Set[T])]): Seq[T] = {
-      nodes.map(_._1).toSeq
-    }
+    def extractNames(nodes: Set[(T, Set[T])]): Seq[T] = nodes.map(_._1).toSeq
 
     // Removes the ends from the graph, also remove them from the dependencies
     // of the remaining nodes. Returns a set of remaining nodes.

@@ -2,6 +2,7 @@ package skadi.util
 
 import java.lang.reflect.Constructor
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 /**
  * Utility class that provides convenience methods for dealing with reflection
@@ -65,12 +66,45 @@ private[skadi] final object ReflectionUtils {
     require(clazz != null)
 
     val scalaName = fieldName.name + scalaSuffix
-    val scalaMethod = getMethod(scalaName, argType, clazz)
+    val scalaMethod = findSingleArgMethod(scalaName, clazz, argType)
     if (scalaMethod.isDefined) scalaMethod
     else {
       val javaName = javaPrefix + fieldName.name.capitalize
-      getMethod(javaName, argType, clazz)
+      findSingleArgMethod(javaName, clazz, argType)
     }
+  }
+
+  /**
+   * Attempts to find a method in the given class that is used that matches the
+   * supplied parameter types.
+   *
+   * @param methodName
+   *               name of the method we are trying to find
+   * @param argTypes
+   *               types of the arguments that the method expects
+   * @param clazz
+   *               class that we are inspecting to find the method
+   * @return <code>Some</code> method if it was found, <code>None</code> otherwise
+   *
+   * @throws IllegalArgumentException if any of the supplied arguments is null
+   */
+  def findMethod(methodName: String, argTypes: Array[Class[_]], clazz: Class[_]): Option[Method] = {
+
+    require(methodName != null)
+    require(argTypes != null)
+    require(clazz != null)
+
+    try {
+      val method = clazz.getMethod(methodName, argTypes: _*)
+      Some(method)
+    } catch {
+      case e: java.lang.NoSuchMethodException => None
+    }
+  }
+
+  private def findSingleArgMethod(methodName: String, clazz: Class[_], argType: Class[_]): Option[Method] = {
+    val argTypes = Array[Class[_]](argType)
+    findMethod(methodName, argTypes, clazz)
   }
 
   /**
@@ -113,6 +147,8 @@ private[skadi] final object ReflectionUtils {
     case _ => error(x + " is not of supported type.")
   }
 
+  def getTypes(x: Array[Any]): Array[Class[_]] = x.map(getType(_))
+
   /**
    * Converts <code>Any</code> to <code>AnyRef</code>. This is needed when
    * invoking constructors or methods that expect <code>java.lang.Object</code>
@@ -127,14 +163,15 @@ private[skadi] final object ReflectionUtils {
     case v: AnyVal => valToRef(v)
   }
 
-  private def getMethod(methodName: String, argType: Class[_], clazz: Class[_]): Option[Method] = {
-    try {
-      val method = clazz.getMethod(methodName, argType)
-      Some(method)
-    } catch {
-      case e: java.lang.NoSuchMethodException => None
-    }
-  }
+  /**
+   * Determines if the supplied class is abstract.
+   */
+  def isAbstract(clazz: Class[_]) = Modifier.isAbstract(clazz.getModifiers)
+
+  /**
+   * Determines if the supplied class is concrete.
+   */
+  def isConcrete(clazz: Class[_]) = !isAbstract(clazz)
 
   private def matches(constructor: Constructor[_], argTypes: Array[Class[_]]): Boolean = {
 

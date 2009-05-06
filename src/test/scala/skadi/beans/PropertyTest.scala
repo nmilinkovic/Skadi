@@ -1,15 +1,17 @@
 package skadi.beans
 
-import org.junit.{Assert, Test}
+import org.hamcrest.CoreMatchers._
+import org.junit.Assert.assertThat
+import org.junit.Test
 
 class PropertyTest {
 
   @Test
   def testProperty {
-    Assert.assertTrue(isProperty("${jdbc.url}"))
-    Assert.assertTrue(isProperty(" ${jdbc.url} "))
-    Assert.assertFalse(isProperty("%{jdbc.url}"))
-    Assert.assertFalse(isProperty("this is not a property"))
+    assertThat(isProperty("${jdbc.url}"), is(true))
+    assertThat(isProperty(" ${jdbc.url} "), is(true))
+    assertThat(isProperty("%{jdbc.url}"), is(false))
+    assertThat(isProperty("this is not a property"), is(false))
   }
 
   private def isProperty(x: Any): Boolean = x match {

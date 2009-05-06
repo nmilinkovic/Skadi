@@ -1,6 +1,7 @@
 package skadi.container
 
 import skadi.beans.Scope
+import skadi.util.ReflectionUtils._
 
 /**
  * Performs different evaluations on a bean that is defined within the
@@ -70,6 +71,21 @@ trait BeanEvaluator extends InstanceFactory {
   def isLazy(name: Symbol): Boolean = {
     val bean = findBean(name)
     bean.lazyBean
+  }
+
+  /**
+   * Returns <tt>true</tt> if the bean with the supplied name is instantiable
+   * by the container, <tt>false</tt> otherwise.
+   *
+   * @param name
+   *       name of the bean that is being looked up
+   * @return <tt>true</tt> if the bean is loaded lazily
+   *
+   * @throws BeanNotFoundException
+   */
+  def isInstantiable(name: Symbol): Boolean = {
+    val bean = findBean(name)
+    isConcrete(bean.clazz)
   }
 
   /**

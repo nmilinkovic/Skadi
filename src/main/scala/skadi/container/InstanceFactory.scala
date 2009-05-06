@@ -1,7 +1,6 @@
 package skadi.container
 
 import java.lang.reflect.Constructor
-import java.lang.reflect.Modifier
 
 import skadi.beans.Bean
 import skadi.beans.Scope
@@ -9,14 +8,14 @@ import skadi.beans.Val
 import skadi.container.processing.InstanceProcessor
 import skadi.exception.BeanNotFoundException
 import skadi.exception.BeanNotInstantiableException
-import skadi.util.ReflectionUtils
+import skadi.util.ReflectionUtils._
 
 /**
  * Defines methods for the on-demand creation of user defined beans.
  *
  * @author Nikola Milinkovic
  */
-trait InstanceFactory extends Initializer {
+trait InstanceFactory extends ContainerLifecycleManager {
 
   /**
    * A list of processors that will be invoked on every instance that is
@@ -51,25 +50,6 @@ trait InstanceFactory extends Initializer {
   }
 
   /**
-   * Initalize the bean on factory startup, but only if it is concrete, eagerly
-   * loaded and scoped as singleton.
-   *
-   * @param bean factory bean that will be initialized
-   *
-   * @return factory bean with created instance, but only if it matches the
-   * initialization terms
-   */
-  override protected def initInstance(bean: Bean): Bean = {
-    val concrete = !isAbstract(bean)
-    val eager = !bean.lazyBean
-    val singleton = bean.scope == Scope.Singleton
-    if (concrete && eager && singleton) {
-      bean.instance = createInstance(bean)
-    }
-    bean
-  }
-
-  /**
    * Finds the bean with the given name in the context. Throws an exception if the
    * bean is not there.
    *
@@ -88,17 +68,12 @@ trait InstanceFactory extends Initializer {
   }
 
   /**
-   * Determines if the supplied factory bean is abstract.
-   */
-  protected def isAbstract(bean: Bean) = Modifier.isAbstract(bean.clazz.getModifiers)
-
-  /**
    * Returns an instance of the specified bean. It will create a new instance
    * if the bean is not instantiated yet or if it is scoped as prototype.
    */
   protected def getInstance(bean: Bean): Any = {
 
-    if (isAbstract(bean)) {
+    if (isAbstract(bean.clazz)) {
       throw new BeanNotInstantiableException("Bean '" + bean.name +"' is abstract and therefore"
                            + " cannot be instantiated!")
     }
@@ -111,7 +86,7 @@ trait InstanceFactory extends Initializer {
 
   private def findMatchingConstructor(bean: Bean, args: Array[Any]): Constructor[_] = {
     val argTypes = getArgTypes(args)
-    val constructor = ReflectionUtils.findConstructor(bean.clazz, argTypes)
+    val constructor = findConstructor(bean.clazz, argTypes)
     if (constructor.isEmpty) {
       throw new NoSuchMethodException("Constructor with arguments (" + args.mkString(",")
                                       + ") is not defined for " + bean)
@@ -119,7 +94,7 @@ trait InstanceFactory extends Initializer {
     constructor.get
   }
 
-  private def createInstance(bean: Bean): Any = {
+  private[container] def createInstance(bean: Bean): Any = {
     if (bean.constructor == null) {
       bean.constructor = findMatchingConstructor(bean, bean.args.toArray)
     }
@@ -133,7 +108,7 @@ trait InstanceFactory extends Initializer {
       constructor.newInstance()
     } else {
       val argVals = args.map(getArgValue(_))
-      val argRefs = ReflectionUtils.anyToRef(argVals)
+      val argRefs = anyToRef(argVals)
       constructor.newInstance(argRefs: _*)
     }
     injectWithSetterDependencies(instance, constructor.getDeclaringClass, injectables)
@@ -152,9 +127,9 @@ trait InstanceFactory extends Initializer {
 
     val argType = getSetterArgType(injectable)
     val argValue = getArgValue(injectable._1)
-    val argRef = ReflectionUtils.anyToRef(argValue)
+    val argRef = anyToRef(argValue)
     val fieldName = injectable._2
-    val setter = ReflectionUtils.findSetter(fieldName, argType, clazz)
+    val setter = findSetter(fieldName, argType, clazz)
     if (setter.isEmpty) {
       throw new NoSuchMethodException("Setter for property '" + injectable._2.name
                                       + "' of type '" + argType.getName + "' is not defined in class "
@@ -173,8 +148,8 @@ trait InstanceFactory extends Initializer {
 
   private def getArgType(arg: Any): Class[_] = arg match {
     case s: Symbol if (context.contains(s)) => context.get(s).get.clazz
-    case Val(v) => ReflectionUtils.getType(v)
-    case v: AnyVal => ReflectionUtils.getType(v)
+    case Val(v) => getType(v)
+    case v: AnyVal => getType(v)
     case r: AnyRef => r.getClass
     case _ => error(arg + " is not of supported type.")
   }

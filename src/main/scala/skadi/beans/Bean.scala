@@ -113,8 +113,8 @@ class Bean {
    *         name of the method this bean should be initialized with
    * @param args
    *       optional arguments that should be supplied to the initialization
-   *       method. They have to be in the same order as the method expects
-   *       them
+   *       method. They cannot be references to other beans, only literal
+   *       values.
    * @return the instance of this bean
    */
   def initializeWith(initMethod: Symbol, args: Any*): Bean = {

@@ -1,6 +1,9 @@
 package skadi.container
 
-import org.junit.{Assert, Test}
+import org.junit.Assert._
+import org.junit.Test
+
+import com.sample.app.model._
 import com.sample.app.dao._
 import com.sample.app.service._
 
@@ -13,8 +16,17 @@ class BeanRepositoryTest {
 
   @Test
   def testGetBean {
+
     val userDao = repository.getBean[UserDao]('userDao)
-    Assert.assertNotNull(userDao)
+    assertNotNull(userDao)
+
+    // check that we got same reference for the singleton
+    val anotherReference = repository.getBean[UserDao]('userDao)
+    assertSame(userDao, anotherReference)
+
+    val user = repository.getBean[User]('user)
+    val anotherUser = repository.getBean[User]('user)
+    assertNotSame(user, anotherUser)
 
     var exceptionCaught = false
     try {
@@ -22,53 +34,64 @@ class BeanRepositoryTest {
     } catch {
       case e: BeanNotFoundException => exceptionCaught = true
     }
-    Assert.assertTrue(exceptionCaught)
+    assertTrue(exceptionCaught)
+
+    exceptionCaught = false
+    try {
+      repository.getBean[UserDao]('user)
+    } catch {
+      case e: ClassCastException => exceptionCaught = true
+    }
+    assertTrue(exceptionCaught)
   }
 
   @Test
   def testGetOptionalBean {
     val userDao = repository.getOptionalBean[UserDao]('userDao)
-    Assert.assertTrue(userDao.isDefined)
+    assertTrue(userDao.isDefined)
 
     val undefinedBean = repository.getOptionalBean[UserDao]('nosuchbean)
-    Assert.assertTrue(undefinedBean.isEmpty)
+    assertTrue(undefinedBean.isEmpty)
+
+    val nonCastableBean = repository.getOptionalBean[UserDao]('user)
+    assertTrue(nonCastableBean.isEmpty)
   }
 
 
   @Test
   def testContainsBean {
-    Assert.assertTrue(repository.containsBean('userDao))
-    Assert.assertFalse(repository.containsBean('noSuchBean))
+    assertTrue(repository.containsBean('userDao))
+    assertFalse(repository.containsBean('noSuchBean))
   }
 
   @Test
   def testGetBeansCount {
-    Assert.assertEquals(5, repository.getBeansCount)
+    assertEquals(5, repository.getBeansCount)
   }
 
   @Test
   def testGetAllBeanNames {
     val names = repository.getAllBeanNames
-    Assert.assertEquals(5, names.size)
-    Assert.assertTrue(names.contains('userDao))
-    Assert.assertFalse(names.contains('noSuchBean))
+    assertEquals(5, names.size)
+    assertTrue(names.contains('userDao))
+    assertFalse(names.contains('noSuchBean))
   }
 
   @Test
   def testGetBeanNamesForExactType {
     val names = repository.getBeanNamesForExactType[com.sample.app.model.User]
-    Assert.assertEquals(2, names.size)
-    Assert.assertTrue(names.contains('user))
-    Assert.assertTrue(names.contains('admin))
-    Assert.assertFalse(names.contains('nosuchuser))
+    assertEquals(2, names.size)
+    assertTrue(names.contains('user))
+    assertTrue(names.contains('admin))
+    assertFalse(names.contains('nosuchuser))
   }
 
   @Test
   def testGetAssignableBeanNamesForType {
     val names = repository.getAssignableBeanNamesForType[com.sample.app.dao.UserDaoImpl]
-    Assert.assertEquals(1, names.size)
-    Assert.assertTrue(names.contains('userDao))
-    Assert.assertFalse(names.contains('postDao))
+    assertEquals(1, names.size)
+    assertTrue(names.contains('userDao))
+    assertFalse(names.contains('postDao))
   }
 
 }

@@ -3,6 +3,7 @@ package skadi.container
 import scala.reflect.Manifest
 
 import skadi.beans.Bean
+import skadi.beans.Scope
 
 /**
  * Provides methods for the retrieval, adding and removal of the beans from the
@@ -31,9 +32,17 @@ trait BeanRepository extends BeanEvaluator {
    * @throws ClassCastException if the bean instance cannot be cast to the given
    * type
    */
-  def getBean[T](name: Symbol): T = {
+  def getBean[T](name: Symbol)(implicit m: Manifest[T]): T = {
     val bean = findBean(name)
-    getInstance(bean).asInstanceOf[T]
+    if (!isAssignable(name, m.erasure)) {
+      throw new ClassCastException(bean + " is not assignable to class " + m.erasure.getName + "!")
+    }
+    val instance = getInstance(bean)
+    // store the instance for reuse
+    if (bean.instance == null && bean.scope == Scope.Singleton) {
+      bean.instance = instance
+    }
+    instance.asInstanceOf[T]
   }
 
 
@@ -47,11 +56,11 @@ trait BeanRepository extends BeanEvaluator {
    * @param name name of the bean that will be retrieved
    *
    * @return an instance of the bean, cast as <T>
-   *
    */
-  def getOptionalBean[T](name: Symbol): Option[T] = {
-    if (containsBean(name)) Some(getBean[T](name))
-    else None
+  def getOptionalBean[T](name: Symbol)(implicit m: Manifest[T]): Option[T] = {
+    if (containsBean(name) && isAssignable(name, m.erasure) && isInstantiable(name)) {
+      Some(getBean[T](name))
+    } else None
   }
 
 
