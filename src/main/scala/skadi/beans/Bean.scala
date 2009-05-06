@@ -66,8 +66,9 @@ class Bean {
 
   /**
    * Use this method to inject dependencies through setter methods. First Scala
-   * and then Java setters are taken into the account when scanning the class
-   * for viable methods.
+   * setters are taken into the account when scanning the class for viable methods.
+   * If none are found, Java setters are looked up.
+   *
    * An example:
    *
    * <pre>
