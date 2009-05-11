@@ -114,6 +114,7 @@ trait BeanEvaluator extends InstanceFactory {
    * <tt>None</tt> otherwise
    */
   def getOptionalType(name: Symbol): Option[Class[_]] = {
+    require(name != null)
     val bean = context.get(name)
     if (bean.isDefined) Some(bean.get.clazz)
     else None

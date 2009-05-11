@@ -82,7 +82,7 @@ trait BeanRepository extends BeanEvaluator {
    *
    * @return a set of defined bean names
    */
-  def getAllBeanNames(): Set[Symbol] = Set.empty ++ context.keySet
+  def getAllBeanNames: Set[Symbol] = Set.empty ++ context.keySet
 
   /**
    * Returns a set of names of the beans that are implemented with
@@ -93,7 +93,7 @@ trait BeanRepository extends BeanEvaluator {
    * @return a set of names of the beans that are implemented with the supplied
    * class
    */
-  def getBeanNamesForExactType[T](implicit m: Manifest[T]) : Set[Symbol] = {
+  def getBeanNamesForExactType[T](implicit m: Manifest[T]): Set[Symbol] = {
     getFilteredBeanNames(b => b.clazz == m.erasure)
   }
 

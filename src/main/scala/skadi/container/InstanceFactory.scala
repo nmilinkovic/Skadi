@@ -60,6 +60,7 @@ trait InstanceFactory extends ContainerLifecycleManager {
    * @throws BeanNotFoundException if the bean is not found
    */
   protected def findBean(name: Symbol): Bean = {
+    require(name != null, "Name of the bean cannot be passed as null!")
     val bean = context.get(name)
     if (bean.isEmpty) {
       throw new BeanNotFoundException("Bean named '" + name.name + "' is not registered in the container!")
@@ -119,7 +120,7 @@ trait InstanceFactory extends ContainerLifecycleManager {
     }
     injectWithSetterDependencies(instance, constructor.getDeclaringClass, injectables)
     // process the instance after it has been injected with dependencies
-    instanceProcessors.foreach(_.process(bean))
+    instanceProcessors.foreach(_.process(instance, bean))
 
     instance
   }

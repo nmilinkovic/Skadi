@@ -8,7 +8,10 @@ import skadi.util.ReflectionUtils
  */
 private[container] class InstanceInitializer extends InstanceProcessor {
 
-  override def process(bean: Bean): Bean = {
+  override def process(pair: (Any, Bean)): (Any, Bean) = {
+
+    val instance = pair._1
+    val bean = pair._2
 
     if (bean.initMethod != null) {
 
@@ -19,11 +22,10 @@ private[container] class InstanceInitializer extends InstanceProcessor {
       val method = ReflectionUtils.findMethod(methodName, argTypes, bean.clazz)
       val argRefs = ReflectionUtils.anyToRef(argVals)
       assume(method.isDefined)
-
-      method.get.invoke(bean.instance, argRefs: _*)
+      method.get.invoke(instance, argRefs: _*)
     }
 
-    bean
+    pair
   }
 
 }

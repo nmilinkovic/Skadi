@@ -65,7 +65,6 @@ private[container] trait ContainerLifecycleManager extends Loggable {
         log.info("Context created with " + context.size + " beans.")
 
         // post-process the beans in the context
-        //postprocessors.foreach(_.process(preprocessedBeans))
         postprocessors.foldLeft(preprocessedBeans)(processBeans(_, _))
         log.info("Container started.")
 
