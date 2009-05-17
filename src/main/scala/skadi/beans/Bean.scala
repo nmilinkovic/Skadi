@@ -1,7 +1,5 @@
 package skadi.beans
 
-import scala.reflect.Manifest
-
 /**
  * Use this class to define a single bean in the container. The container will
  * create an instance of this bean, inject it with declared dependencies and in
@@ -45,6 +43,11 @@ class Bean {
     this.clazz = clazz
     this
   }
+//  def implementedWith[T](implicit m: Manifest[T]): Bean = {
+//    this.clazz = m.erasure
+//    this
+//  }
+
 
   /**
    * Any parameters that are required by the constructor that will be used to

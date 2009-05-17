@@ -1,18 +1,25 @@
 package skadi.container
 
-import skadi.beans.Bean;
+import skadi.beans.Bean
 import skadi.container.processing._
+import skadi.util.Loggable
 
-class Container(beans: Seq[Bean]) extends BeanRepository {
+class Container(beans: Seq[Bean])
+                extends BeanRepository
+                   with BeanEvaluator
+                   with InstanceFactory
+                   with ContainerLifecycleManager
+                   with ContextHolder
+                   with Loggable {
 
-  override protected def validators = Nil
+  override protected val validators = Nil
 
-  override protected def preprocessors = new TopologicalBeanSorter ::
+  override protected val preprocessors = new TopologicalBeanSorter ::
                                          new PropertiesResolver :: Nil
 
-  override protected def postprocessors = new EagerLoader(this) :: Nil
+  override protected val postprocessors = new EagerLoader(this) :: Nil
 
-  override protected def instanceProcessors = new InstanceInitializer :: Nil
+  override protected val instanceProcessors = new InstanceInitializer :: Nil
 
   initialize(beans)
 

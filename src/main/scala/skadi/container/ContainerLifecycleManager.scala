@@ -4,6 +4,7 @@ import scala.collection.mutable
 
 import skadi.beans.Bean
 import skadi.container.processing.BeanProcessor
+import skadi.container.validation.Error
 import skadi.container.validation.Validator
 import skadi.util.Loggable
 
@@ -13,31 +14,28 @@ import skadi.util.Loggable
  *
  * @author Nikola Milinkovic
  */
-private[container] trait ContainerLifecycleManager extends Loggable {
+private[container] trait ContainerLifecycleManager {
 
-  /**
-   * The application context, contains each defined bean registered under its
-   * unique name in the map.
-   */
-  protected val context = new mutable.HashMap[Symbol, Bean]
+  self: ContextHolder with Loggable =>
+
 
   /**
    * Define the validators that should perform the validation on the supplied
    * user defined beans.
    */
-  protected def validators: List[Validator]
+  protected val validators: List[Validator]
 
   /**
    * Define processors that that will operate on validated beans before the
    * context is created.
    */
-  protected def preprocessors: List[BeanProcessor]
+  protected val preprocessors: List[BeanProcessor]
 
   /**
    * Define processors that will operate on beans after the context has been
    * created.
    */
-  protected def postprocessors: List[BeanProcessor]
+  protected val postprocessors: List[BeanProcessor]
 
   /**
    * Initializes the context by processing the supplied beans.
@@ -48,7 +46,7 @@ private[container] trait ContainerLifecycleManager extends Loggable {
 
       // validate user input
       log.info("Starting validation...")
-      val errors = validators.foldRight(List[String]())(_.validate(beans) ::: _)
+      val errors = validators.foldLeft(List[Error]())((e: List[Error], v: Validator) => v.validate(beans) ::: e)
       if (!errors.isEmpty) {
         val msg = errors.mkString("Unable to initialize the container. Reason:\n", "\n", "\nExiting...")
         log.severe(msg)

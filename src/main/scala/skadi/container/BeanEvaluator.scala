@@ -9,7 +9,9 @@ import skadi.util.ReflectionUtils._
  *
  * @author Nikola Milinkovic
  */
-trait BeanEvaluator extends InstanceFactory {
+trait BeanEvaluator {
+
+  self: InstanceFactory with ContextHolder =>
 
   /**
    * Returns <tt>true</tt> if the bean with the supplied name is scoped as singleton,

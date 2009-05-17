@@ -15,13 +15,15 @@ import skadi.util.ReflectionUtils._
  *
  * @author Nikola Milinkovic
  */
-trait InstanceFactory extends ContainerLifecycleManager {
+trait InstanceFactory {
+
+  self: ContextHolder =>
 
   /**
    * A list of processors that will be invoked on every instance that is
    * created by this factory.
    */
-  protected def instanceProcessors: List[InstanceProcessor]
+  protected val instanceProcessors: List[InstanceProcessor]
 
   // should throw an exception if the bean is not there
   // unsupported yet

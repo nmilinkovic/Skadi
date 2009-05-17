@@ -12,7 +12,9 @@ import skadi.beans.Scope
  *
  * @author Nikola Milinkovic
  */
-trait BeanRepository extends BeanEvaluator {
+trait BeanRepository {
+
+  self: BeanEvaluator with InstanceFactory with ContextHolder =>
 
   /**
    * Returns the instance of the bean with the given name. If the bean is scoped
@@ -82,7 +84,7 @@ trait BeanRepository extends BeanEvaluator {
    *
    * @return a set of defined bean names
    */
-  def getAllBeanNames: Set[Symbol] = Set.empty ++ context.keySet
+  def getAllBeanNames: Set[Symbol] = Set(context.keySet.toArray: _*)
 
   /**
    * Returns a set of names of the beans that are implemented with
@@ -109,9 +111,9 @@ trait BeanRepository extends BeanEvaluator {
   }
 
   private def getFilteredBeanNames(f: (Bean) => Boolean): Set[Symbol] = {
-    val matchingBeans = context.values.filter(f)
+    val matchingBeans = context.values.toList.filter(f)
     val names = matchingBeans.map(_.name)
-    Set.empty ++ names
+    Set(names.toArray: _*)
   }
 
 }

@@ -1,8 +1,5 @@
 package skadi.container.processing
 
-import scala.collection.mutable
-import scala.collection.immutable.Queue
-
 import skadi.beans.Bean
 
 /**
@@ -27,22 +24,22 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
    */
   override def process(beans: Seq[Bean]): Seq[Bean] = {
 
+    require(beans != null, "Beans passed as null!")
+
     log.info("Sorting the beans...")
 
-    val namesMap = Map.empty ++ beans.map(b => (b.name, b))
+    val namesMap = Map(beans.map(b => (b.name, b)): _*)
     val graph = constructGraph(namesMap)
     val sortedNames = topSort[Symbol](graph)
-    for {
-      name <- sortedNames
-      bean = namesMap.get(name).get
-    } yield bean
+
+    sortedNames.map(namesMap(_))
   }
 
   private def constructGraph(namesMap: Map[Symbol, Bean]): Set[(Symbol, Set[Symbol])] = {
     val nodes = for {
       name <- namesMap.keys
       names = namesMap.keySet.toList
-      bean = namesMap.getOrElse(name, null)
+      bean = namesMap(name)
       constructorDependencies = extractNames(bean.args, names)
       setterDependencies = extractNames(bean.injectables.map(_._2), names)
       dependencies = constructorDependencies ++ setterDependencies
@@ -53,17 +50,16 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
   private def extractNames(args: List[Any], allNames: List[Symbol]): Set[Symbol] = {
     // names of other beans in the argument list represent  beans that this
     // bean depends on
-    val extractedNames = new mutable.ListBuffer[Symbol]
-    for (arg <- args) arg match {
-      case name: Symbol if (allNames.contains(name)) => extractedNames += name
-      case _ => //not a reference, ignore it
-    }
-    val result = mutable.Set.empty[Symbol]
-    for (eachName <- extractedNames) {
-      result += eachName
+    def getName(arg: Any): Option[Symbol] = arg match {
+      case name: Symbol if (allNames.contains(name)) => Some(name)
+      case _ => None
     }
 
-    Set.empty ++ result
+    val possibleNames = args.map(getName(_))
+    val definedNames = possibleNames.filter(_.isDefined)
+    val extractedNames = definedNames.map(_.get)
+
+    Set(extractedNames.toArray: _*)
   }
 
   /**
@@ -80,8 +76,6 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
    */
   private def topSort[T](nodes: Set[(T, Set[T])]): Seq[T] = {
 
-    require(nodes != null, "Graph nodes passed as null!")
-
     // Finds all nodes that have no more dependencies
     def findEnds(nodes: Set[(T, Set[T])]): Set[(T, Set[T])] = nodes.filter(_._2.isEmpty)
 
@@ -91,11 +85,8 @@ private[container] class TopologicalBeanSorter extends BeanProcessor {
     // Removes the ends from the graph, also remove them from the dependencies
     // of the remaining nodes. Returns a set of remaining nodes.
     def removeEnds(ends: Set[(T, Set[T])], nodes: Set[(T, Set[T])]): Set[(T, Set[T])] = {
-      val prunedNodes = for {
-        node <- nodes
-        if (!ends.contains(node))
-      } yield (node._1, node._2 -- extractNames(ends))
-      Set.empty ++ prunedNodes
+      val filteredNodes = nodes.filter(!ends.contains(_))
+      filteredNodes.map(n => (n._1, n._2 -- extractNames(ends)))
     }
 
     // main algorithm

@@ -18,7 +18,7 @@ private[skadi] object Property {
   }
 
   private def trimBraces(property: String): String = {
-    property.substring(property.lastIndexOf("{") + 1, property.lastIndexOf("}"))
+    property.substring(property.indexOf("{") + 1, property.lastIndexOf("}"))
   }
 
 }
